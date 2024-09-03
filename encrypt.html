@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypt Message</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: transparent;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+        
+        textarea, input {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        #outputSection {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        label {
+            margin-bottom: -10px;
+        }
+        
+        #outputEncryptedKey {
+            padding: 15px;
+            border: 1px dashed #007BFF;
+            width: 500px;
+            word-wrap: break-word;
+            text-align: center;
+            background-color: #e6f7ff;
+        }
+        textarea {
+            width: 500px;  /* Adjust the width as needed */
+            height: 150px; /* Adjust the height as needed */
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1.5em;
+            resize: vertical; /* Allows users to adjust the height if they want */
+        }
+        
+        input[type="text"] {
+            width: 500px;  /* Adjust the width as needed */
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -100;
+            transform: translateX(-50%) translateY(-50%);
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5); 
+            z-index: -50; 
+        }
+    </style>
+</head>
+<body>
+
+    <video autoplay loop muted>
+        <source src="/files/video.mp4" type="video/mp4">
+    </video>
+
+
+    <center><font color="white">
+    <h1>Encryption Page</h1>
+    <h2>Enter your message and key to encrypt</h2>
+    </font></center>
+
+    <textarea id="inputMessage" placeholder="Enter your message..."></textarea>
+    <input type="text" id="inputKey" placeholder="Enter your 32-bit key...">
+
+
+    <button id="encryptBtn">Encrypt My Message</button>
+    <audio id="encryptingAudio" src="/files/encryptingMessage.mp3" style="display: none;"></audio>
+    <div id="outputSection">
+        
+        <font color="white">
+        <label>Encrypted Message:</label>
+        </font><br>
+        <div id="outputEncryptedKey"></div>
+        
+    </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('#encryptBtn').addEventListener('click', async function() {
+            const message = document.getElementById('inputMessage').value;
+            const keyStr = document.getElementById('inputKey').value;
+    
+            if (keyStr.length !== 32) {
+                alert('Key must be 32 characters long!');
+                return;
+            }
+    
+            setTimeout(async function() {
+                const key = new TextEncoder().encode(keyStr);
+                const data = new TextEncoder().encode(message);
+                
+                const cryptoKey = await window.crypto.subtle.importKey(
+                    'raw', key, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+                );
+    
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const encryptedData = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, cryptoKey, data);
+    
+                const combined = new Uint8Array(iv.length + encryptedData.byteLength);
+                combined.set(iv);
+                combined.set(new Uint8Array(encryptedData), iv.length);
+    
+                document.getElementById('outputEncryptedKey').textContent = btoa(String.fromCharCode.apply(null, combined));
+            }, 2000);  // 2 seconds delay
+        });
+    });
+    
+    document.getElementById('encryptBtn').addEventListener('click', function() {
+        let audio = document.getElementById('encryptingAudio');
+        audio.play();
+    });
+</script>
+</body>
+</html>
