@@ -20,4 +20,4 @@ To use this application locally, follow these steps:
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/encryption-decryption-webapp.git
+   git clone https://github.com/shivsinghin/Cipher-Vault.git
